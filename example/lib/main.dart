@@ -48,49 +48,176 @@ class _MyHomePageState extends State<MyHomePage> {
     // Initialize the controller with targets
     _controller = CoachMarkController(
       targets: [
+        // Default style with minor customizations
         CoachMarkTarget(
           key: _titleKey,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
           description: CoachMarkDesc(
-            title: 'Welcome!',
-            content: 'This is a demo of the Custom Coach Mark package',
+            title: 'Default Style',
+            content: 'This uses the default style with purple background',
             alignment: CoachMarkAlignment.bottom,
-            backgroundColor: Colors.blue,
+            backgroundColor: Colors.purple,
+            borderRadius: BorderRadius.circular(12),
+            maxWidth: 300,
           ),
         ),
+        
+        // Custom decoration style
         CoachMarkTarget(
           key: _cardKey,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(12)),
           ),
-          padding: const EdgeInsets.all(8),
           description: CoachMarkDesc(
-            title: 'Featured Item',
-            content: 'This card shows important information about the item',
+            title: 'Custom Decoration',
+            content: 'This uses a custom decoration with gradient background',
             alignment: CoachMarkAlignment.top,
-            backgroundColor: Colors.orange,
+            tooltipDecoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.green, Colors.teal],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 15,
+                  offset: Offset(0, 8),
+                ),
+              ],
+            ),
+            contentPadding: EdgeInsets.all(20),
+            arrowSize: 15,
           ),
         ),
+        
+        // Custom button builders
         CoachMarkTarget(
           key: _menuKey,
           shape: const CircleBorder(),
           description: CoachMarkDesc(
-            title: 'Menu',
-            content: 'Access app settings and more options',
+            title: 'Custom Buttons',
+            content: 'This example uses custom buttons and pagination indicators',
             alignment: CoachMarkAlignment.bottomLeft,
-            backgroundColor: Colors.green,
+            backgroundColor: Colors.blue,
+            skipButtonBuilder: (onSkip) => ElevatedButton(
+              onPressed: onSkip,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              ),
+              child: Text('Exit'),
+            ),
+            nextButtonBuilder: (onNext, isLastStep) => ElevatedButton(
+              onPressed: onNext,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              ),
+              child: Text(isLastStep ? 'Finish' : 'Next'),
+            ),
+            previousButtonBuilder: (onPrevious) => TextButton(
+              onPressed: onPrevious,
+              style: TextButton.styleFrom(foregroundColor: Colors.white),
+              child: Text('Back'),
+            ),
+            paginationBuilder: (currentIndex, totalCount) => Row(
+              children: List.generate(
+                totalCount,
+                (index) => Container(
+                  width: 12,
+                  height: 12,
+                  margin: EdgeInsets.symmetric(horizontal: 4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: index == currentIndex ? Colors.white : Colors.white30,
+                    border: Border.all(color: Colors.white, width: 1),
+                  ),
+                  child: index == currentIndex
+                      ? Center(
+                          child: Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        )
+                      : null,
+                ),
+              ),
+            ),
           ),
         ),
+        
+        // Completely custom tooltip using tooltipBuilder
         CoachMarkTarget(
           key: _buttonKey,
           shape: const CircleBorder(),
           description: CoachMarkDesc(
-            title: 'Add Item',
-            content: 'Tap here to add a new item to your collection',
-            alignment: CoachMarkAlignment.topRight,
-            backgroundColor: Colors.purple,
+            content: 'This is a completely custom tooltip',
+            alignment: CoachMarkAlignment.left,
+            tooltipBuilder: (context, data) => Container(
+              width: 250,
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.black87,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.orangeAccent, width: 2),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'CUSTOM TOOLTIP',
+                    style: TextStyle(
+                      color: Colors.orangeAccent,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    data.content,
+                    style: TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                  SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton.icon(
+                        onPressed: data.onSkip,
+                        icon: Icon(Icons.close, color: Colors.red),
+                        label: Text('SKIP', style: TextStyle(color: Colors.red)),
+                      ),
+                      Row(
+                        children: [
+                          if (data.hasPrevious)
+                            IconButton(
+                              onPressed: data.onPrevious,
+                              icon: Icon(Icons.arrow_back, color: Colors.white),
+                            ),
+                          IconButton(
+                            onPressed: data.onNext,
+                            icon: Icon(
+                              data.hasNext ? Icons.arrow_forward : Icons.check,
+                              color: Colors.orangeAccent,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ],

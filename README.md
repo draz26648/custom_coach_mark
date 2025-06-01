@@ -14,13 +14,13 @@ A customizable coach mark package for Flutter that creates beautiful, responsive
 - **Tooltip-style descriptions** - Modern, attractive tooltips with customizable appearance
 - **Highly customizable** - Control colors, shapes, positions, and more
 
-<img src="https://raw.githubusercontent.com/yourusername/custom_coach_mark/main/screenshots/example.png" alt="Custom Coach Mark Example" width="300"/>
+<img src="https://raw.githubusercontent.com/draz26648/custom_coach_mark/main/screenshots/example.png" alt="Custom Coach Mark Example" width="300"/>
 
 ## Installation
 
 ```yaml
 dependencies:
-  custom_coach_mark: ^0.1.0
+  custom_coach_mark: ^0.2.0
 ```
 
 ## Usage
@@ -156,6 +156,184 @@ CustomCoachMark(
 );
 ```
 
+## Advanced Customization
+
+The package offers extensive customization options:
+
+### CoachMarkTarget
+
+- `identify`: The GlobalKey of the widget to highlight
+- `shape`: The shape of the highlight (circle, rectangle, oval, or custom shape)
+- `padding`: Additional padding around the target widget
+- `description`: The description to show for the target
+
+### CoachMarkDesc
+
+Basic Properties:
+- `title`: The title of the description
+- `content`: The content of the description
+- `titleStyle`: The text style for the title
+- `contentStyle`: The text style for the content
+- `alignment`: The alignment of the description relative to the target
+- `backgroundColor`: The background color of the description box
+
+Advanced Styling:
+- `tooltipDecoration`: Custom BoxDecoration for the tooltip container
+- `contentPadding`: Custom padding for the tooltip content
+- `borderRadius`: Border radius for the tooltip
+- `maxWidth`: Maximum width for the tooltip
+
+Arrow Customization:
+- `showArrow`: Whether to show the arrow pointer
+- `arrowSize`: Size of the arrow pointer
+- `arrowColor`: Color of the arrow pointer
+
+Custom Builders:
+- `tooltipBuilder`: Completely custom tooltip builder that overrides the default design
+- `skipButtonBuilder`: Custom builder for the skip button
+- `nextButtonBuilder`: Custom builder for the next button
+- `previousButtonBuilder`: Custom builder for the previous button
+- `paginationBuilder`: Custom builder for the pagination indicators
+
+### CustomCoachMark
+
+- `controller`: The controller for the coach mark
+- `overlayColor`: The color of the overlay
+- `overlayOpacity`: The opacity of the overlay (0.0 to 1.0)
+- `child`: The child widget to display
+
+## Advanced Customization Examples
+
+### Custom Tooltip Style
+
+```dart
+CoachMarkDesc(
+  title: 'Custom Style',
+  content: 'This tooltip has custom styling',
+  alignment: CoachMarkAlignment.bottom,
+  backgroundColor: Colors.purple,
+  borderRadius: BorderRadius.circular(12),
+  maxWidth: 300,
+  contentPadding: EdgeInsets.all(20),
+  arrowSize: 15,
+  titleStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+  contentStyle: TextStyle(color: Colors.white70, fontSize: 16),
+)
+```
+
+### Custom Decoration with Gradient
+
+```dart
+CoachMarkDesc(
+  title: 'Gradient Background',
+  content: 'This tooltip has a gradient background',
+  alignment: CoachMarkAlignment.top,
+  tooltipDecoration: BoxDecoration(
+    gradient: LinearGradient(
+      colors: [Colors.blue, Colors.purple],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    borderRadius: BorderRadius.circular(16),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.3),
+        blurRadius: 15,
+        offset: Offset(0, 8),
+      ),
+    ],
+  ),
+)
+```
+
+### Custom Button Builders
+
+```dart
+CoachMarkDesc(
+  title: 'Custom Buttons',
+  content: 'This tooltip has custom buttons',
+  alignment: CoachMarkAlignment.bottom,
+  backgroundColor: Colors.blue,
+  skipButtonBuilder: (onSkip) => ElevatedButton(
+    onPressed: onSkip,
+    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+    child: Text('Exit'),
+  ),
+  nextButtonBuilder: (onNext, isLastStep) => ElevatedButton(
+    onPressed: onNext,
+    child: Text(isLastStep ? 'Finish' : 'Next'),
+  ),
+  paginationBuilder: (currentIndex, totalCount) => Row(
+    children: List.generate(
+      totalCount,
+      (index) => Container(
+        width: 10,
+        height: 10,
+        margin: EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: index == currentIndex ? Colors.white : Colors.white30,
+        ),
+      ),
+    ),
+  ),
+)
+```
+
+### Completely Custom Tooltip
+
+```dart
+CoachMarkDesc(
+  content: 'This is a completely custom tooltip',
+  alignment: CoachMarkAlignment.left,
+  tooltipBuilder: (context, data) => Container(
+    width: 250,
+    padding: EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.black87,
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: Colors.orangeAccent, width: 2),
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'CUSTOM TOOLTIP',
+          style: TextStyle(
+            color: Colors.orangeAccent,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+        SizedBox(height: 8),
+        Text(
+          data.content,
+          style: TextStyle(color: Colors.white, fontSize: 14),
+        ),
+        // Custom navigation buttons
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TextButton(
+              onPressed: data.onSkip,
+              child: Text('SKIP', style: TextStyle(color: Colors.red)),
+            ),
+            IconButton(
+              onPressed: data.onNext,
+              icon: Icon(
+                data.hasNext ? Icons.arrow_forward : Icons.check,
+                color: Colors.orangeAccent,
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  ),
+)
+```
+
 ## API Reference
 
 ### CoachMarkTarget
@@ -177,6 +355,18 @@ CustomCoachMark(
 | `contentStyle` | `TextStyle?` | Optional style for the content |
 | `alignment` | `CoachMarkAlignment` | Alignment of the description relative to the target |
 | `backgroundColor` | `Color?` | Optional background color of the description box |
+| `tooltipDecoration` | `BoxDecoration?` | Custom BoxDecoration for the tooltip container |
+| `contentPadding` | `EdgeInsets?` | Custom padding for the tooltip content |
+| `borderRadius` | `BorderRadius?` | Border radius for the tooltip |
+| `maxWidth` | `double?` | Maximum width for the tooltip |
+| `showArrow` | `bool?` | Whether to show the arrow pointer |
+| `arrowSize` | `double?` | Size of the arrow pointer |
+| `arrowColor` | `Color?` | Color of the arrow pointer |
+| `tooltipBuilder` | `Widget Function(BuildContext, CoachMarkDescData)?` | Completely custom tooltip builder that overrides the default design |
+| `skipButtonBuilder` | `Widget Function(Callback)?` | Custom builder for the skip button |
+| `nextButtonBuilder` | `Widget Function(Callback, bool)?` | Custom builder for the next button |
+| `previousButtonBuilder` | `Widget Function(Callback)?` | Custom builder for the previous button |
+| `paginationBuilder` | `Widget Function(int, int)?` | Custom builder for the pagination indicators |
 
 ### CoachMarkController
 
@@ -191,7 +381,7 @@ CustomCoachMark(
 
 ## Contributing
 
-Contributions are welcome! If you find a bug or want a feature, please open an issue on GitHub.
+Contributions are welcome! If you find a bug or want a feature, please open an issue on [GitHub](https://github.com/draz26648/custom_coach_mark/issues).
 
 ## License
 

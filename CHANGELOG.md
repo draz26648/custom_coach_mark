@@ -1,3 +1,16 @@
+## 0.2.0
+
+* Added extensive customization options for CoachMarkDesc:
+  * Custom tooltip decoration with support for gradients, shadows, and borders
+  * Custom content padding and border radius
+  * Arrow customization (size, color, visibility)
+  * Maximum width control
+  * Custom button builders for skip, next, and previous buttons
+  * Custom pagination indicator builder
+  * Completely custom tooltip builder for full design freedom
+* Updated example app to showcase all customization options
+* Improved documentation with examples for each customization option
+
 ## 0.1.0
 
 * Initial release of the custom_coach_mark package

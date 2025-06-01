@@ -53,6 +53,33 @@ class CoachMarkDescWidget extends StatelessWidget {
     // Calculate the position of the tooltip based on the target position and alignment
     final position = _calculatePosition(context);
     
+    // If a custom tooltip builder is provided, use it
+    if (description.tooltipBuilder != null) {
+      // Create the data object for the builder
+      final descData = CoachMarkDescData(
+        title: description.title,
+        content: description.content,
+        currentIndex: currentIndex,
+        totalPages: totalPages,
+        hasNext: hasNext,
+        hasPrevious: hasPrevious,
+        alignment: description.alignment,
+        titleStyle: description.titleStyle,
+        contentStyle: description.contentStyle,
+        backgroundColor: description.backgroundColor,
+        onNext: onNext,
+        onPrevious: onPrevious,
+        onSkip: onSkip,
+      );
+      
+      // Return the positioned custom tooltip
+      return Positioned(
+        left: position.left,
+        top: position.top,
+        child: description.tooltipBuilder!(context, descData),
+      );
+    }
+    
     // Default text styles
     final defaultTitleStyle = TextStyle(
       color: Colors.white,
@@ -64,6 +91,19 @@ class CoachMarkDescWidget extends StatelessWidget {
       color: Colors.white,
       fontSize: 14,
     );
+    
+    // Default decoration
+    final defaultDecoration = BoxDecoration(
+      color: description.backgroundColor ?? Colors.blue,
+      borderRadius: description.borderRadius ?? BorderRadius.circular(8),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.2),
+          blurRadius: 10,
+          offset: Offset(0, 5),
+        ),
+      ],
+    );
 
     return Positioned(
       left: position.left,
@@ -71,28 +111,18 @@ class CoachMarkDescWidget extends StatelessWidget {
       child: Container(
         width: position.width,
         constraints: BoxConstraints(
-          maxWidth: screenSize.width * 0.8,
+          maxWidth: description.maxWidth ?? screenSize.width * 0.8,
         ),
-        decoration: BoxDecoration(
-          color: description.backgroundColor ?? Colors.blue,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 10,
-              offset: Offset(0, 5),
-            ),
-          ],
-        ),
+        decoration: description.tooltipDecoration ?? defaultDecoration,
         child: Stack(
           children: [
             // Tooltip arrow
-            if (_shouldShowArrow())
+            if (description.showArrow && _shouldShowArrow())
               _buildArrow(),
             
             // Content
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: description.contentPadding ?? const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -119,56 +149,64 @@ class CoachMarkDescWidget extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       // Skip button
-                      TextButton(
-                        onPressed: onSkip,
-                        child: Text(
-                          'Skip',
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                      ),
+                      description.skipButtonBuilder != null
+                          ? description.skipButtonBuilder!(onSkip)
+                          : TextButton(
+                              onPressed: onSkip,
+                              child: Text(
+                                'Skip',
+                                style: TextStyle(color: Colors.white70),
+                              ),
+                            ),
                       
                       // Pagination indicator
-                      Row(
-                        children: List.generate(
-                          totalPages,
-                          (index) => Container(
-                            width: 8,
-                            height: 8,
-                            margin: EdgeInsets.symmetric(horizontal: 2),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: index == currentIndex
-                                  ? Colors.white
-                                  : Colors.white.withOpacity(0.5),
+                      description.paginationBuilder != null
+                          ? description.paginationBuilder!(currentIndex, totalPages)
+                          : Row(
+                              children: List.generate(
+                                totalPages,
+                                (index) => Container(
+                                  width: 8,
+                                  height: 8,
+                                  margin: EdgeInsets.symmetric(horizontal: 2),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: index == currentIndex
+                                        ? Colors.white
+                                        : Colors.white.withOpacity(0.5),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
                       
                       // Navigation buttons
                       Row(
                         children: [
                           // Previous button
                           if (hasPrevious)
-                            IconButton(
-                              icon: Icon(Icons.arrow_back, color: Colors.white),
-                              onPressed: onPrevious,
-                              padding: EdgeInsets.zero,
-                              constraints: BoxConstraints(),
-                              iconSize: 20,
-                            ),
+                            description.previousButtonBuilder != null
+                                ? description.previousButtonBuilder!(onPrevious)
+                                : IconButton(
+                                    icon: Icon(Icons.arrow_back, color: Colors.white),
+                                    onPressed: onPrevious,
+                                    padding: EdgeInsets.zero,
+                                    constraints: BoxConstraints(),
+                                    iconSize: 20,
+                                  ),
                           
                           // Next/Finish button
-                          IconButton(
-                            icon: Icon(
-                              hasNext ? Icons.arrow_forward : Icons.check,
-                              color: Colors.white,
-                            ),
-                            onPressed: onNext,
-                            padding: EdgeInsets.zero,
-                            constraints: BoxConstraints(),
-                            iconSize: 20,
-                          ),
+                          description.nextButtonBuilder != null
+                              ? description.nextButtonBuilder!(onNext, !hasNext)
+                              : IconButton(
+                                  icon: Icon(
+                                    hasNext ? Icons.arrow_forward : Icons.check,
+                                    color: Colors.white,
+                                  ),
+                                  onPressed: onNext,
+                                  padding: EdgeInsets.zero,
+                                  constraints: BoxConstraints(),
+                                  iconSize: 20,
+                                ),
                         ],
                       ),
                     ],
@@ -250,7 +288,8 @@ class CoachMarkDescWidget extends StatelessWidget {
 
   /// Build the arrow for the tooltip
   Widget _buildArrow() {
-    final arrowSize = 10.0;
+    final arrowSize = description.arrowSize;
+    final arrowColor = description.arrowColor ?? description.backgroundColor ?? Colors.blue;
     double left = 0;
     double top = 0;
     
@@ -265,7 +304,7 @@ class CoachMarkDescWidget extends StatelessWidget {
             size: Size(arrowSize, arrowSize),
             painter: ArrowPainter(
               direction: ArrowDirection.up,
-              color: description.backgroundColor ?? Colors.blue,
+              color: arrowColor,
             ),
           ),
         );
@@ -279,7 +318,7 @@ class CoachMarkDescWidget extends StatelessWidget {
             size: Size(arrowSize, arrowSize),
             painter: ArrowPainter(
               direction: ArrowDirection.down,
-              color: description.backgroundColor ?? Colors.blue,
+              color: arrowColor,
             ),
           ),
         );
@@ -293,7 +332,7 @@ class CoachMarkDescWidget extends StatelessWidget {
             size: Size(arrowSize, arrowSize),
             painter: ArrowPainter(
               direction: ArrowDirection.right,
-              color: description.backgroundColor ?? Colors.blue,
+              color: arrowColor,
             ),
           ),
         );
@@ -307,7 +346,7 @@ class CoachMarkDescWidget extends StatelessWidget {
             size: Size(arrowSize, arrowSize),
             painter: ArrowPainter(
               direction: ArrowDirection.left,
-              color: description.backgroundColor ?? Colors.blue,
+              color: arrowColor,
             ),
           ),
         );

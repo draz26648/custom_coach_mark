@@ -73,6 +73,44 @@ class CoachMarkDesc {
   
   /// The background color of the description box
   final Color? backgroundColor;
+  
+  /// Custom decoration for the tooltip container
+  final BoxDecoration? tooltipDecoration;
+  
+  /// Padding for the tooltip content
+  final EdgeInsets? contentPadding;
+  
+  /// Custom widget builder for the tooltip
+  /// If provided, this will override the default tooltip design
+  /// The builder receives the description data and navigation callbacks
+  final Widget Function(BuildContext context, CoachMarkDescData descData)? tooltipBuilder;
+  
+  /// Custom builder for the skip button
+  final Widget Function(VoidCallback onSkip)? skipButtonBuilder;
+  
+  /// Custom builder for the next button
+  final Widget Function(VoidCallback onNext, bool isLastStep)? nextButtonBuilder;
+  
+  /// Custom builder for the previous button
+  final Widget Function(VoidCallback onPrevious)? previousButtonBuilder;
+  
+  /// Custom builder for the pagination indicators
+  final Widget Function(int currentIndex, int totalCount)? paginationBuilder;
+  
+  /// Border radius for the tooltip
+  final BorderRadius? borderRadius;
+  
+  /// Maximum width for the tooltip
+  final double? maxWidth;
+  
+  /// Whether to show the arrow pointer
+  final bool showArrow;
+  
+  /// Arrow size
+  final double arrowSize;
+  
+  /// Arrow color (defaults to backgroundColor if not specified)
+  final Color? arrowColor;
 
   /// Constructor for creating a coach mark description
   CoachMarkDesc({
@@ -82,6 +120,18 @@ class CoachMarkDesc {
     this.contentStyle,
     this.alignment = CoachMarkAlignment.bottom,
     this.backgroundColor,
+    this.tooltipDecoration,
+    this.contentPadding,
+    this.tooltipBuilder,
+    this.skipButtonBuilder,
+    this.nextButtonBuilder,
+    this.previousButtonBuilder,
+    this.paginationBuilder,
+    this.borderRadius,
+    this.maxWidth,
+    this.showArrow = true,
+    this.arrowSize = 10.0,
+    this.arrowColor,
   });
 }
 
@@ -95,4 +145,63 @@ enum CoachMarkAlignment {
   topRight,
   bottomLeft,
   bottomRight,
+}
+
+/// Data class for the tooltip builder
+class CoachMarkDescData {
+  /// The title of the description
+  final String? title;
+  
+  /// The content of the description
+  final String content;
+  
+  /// The current page index
+  final int currentIndex;
+  
+  /// The total number of pages
+  final int totalPages;
+  
+  /// Whether there is a next page
+  final bool hasNext;
+  
+  /// Whether there is a previous page
+  final bool hasPrevious;
+  
+  /// The alignment of the description relative to the target
+  final CoachMarkAlignment alignment;
+  
+  /// The text style for the title
+  final TextStyle? titleStyle;
+  
+  /// The text style for the content
+  final TextStyle? contentStyle;
+  
+  /// The background color of the description box
+  final Color? backgroundColor;
+  
+  /// Callback when the next button is pressed
+  final VoidCallback onNext;
+  
+  /// Callback when the previous button is pressed
+  final VoidCallback onPrevious;
+  
+  /// Callback when the skip button is pressed
+  final VoidCallback onSkip;
+  
+  /// Constructor for the tooltip data
+  CoachMarkDescData({
+    this.title,
+    required this.content,
+    required this.currentIndex,
+    required this.totalPages,
+    required this.hasNext,
+    required this.hasPrevious,
+    required this.alignment,
+    this.titleStyle,
+    this.contentStyle,
+    this.backgroundColor,
+    required this.onNext,
+    required this.onPrevious,
+    required this.onSkip,
+  });
 }
