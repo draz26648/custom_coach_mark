@@ -109,6 +109,9 @@ class CoachMarkDesc {
   /// Arrow size
   final double arrowSize;
   
+  /// Arrow radius for rounded corners (0 for sharp arrow)
+  final double arrowRadius;
+  
   /// Arrow color (defaults to backgroundColor if not specified)
   final Color? arrowColor;
 
@@ -131,6 +134,7 @@ class CoachMarkDesc {
     this.maxWidth,
     this.showArrow = true,
     this.arrowSize = 10.0,
+    this.arrowRadius = 0.0,
     this.arrowColor,
   });
 }
@@ -179,6 +183,9 @@ class CoachMarkDescData {
   /// The background color of the description box
   final Color? backgroundColor;
   
+  /// Arrow radius for rounded corners (0 for sharp arrow)
+  final double? arrowRadius;
+  
   /// Callback when the next button is pressed
   final VoidCallback onNext;
   
@@ -200,6 +207,7 @@ class CoachMarkDescData {
     this.titleStyle,
     this.contentStyle,
     this.backgroundColor,
+    this.arrowRadius,
     required this.onNext,
     required this.onPrevious,
     required this.onSkip,

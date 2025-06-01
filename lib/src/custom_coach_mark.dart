@@ -134,28 +134,38 @@ class HolePainter extends CustomPainter {
     // Create a path for the hole
     final holePath = Path();
     
+    // Add padding to the highlight rect for better spacing
+    final highlightPadding = 8.0;
+    final highlightRect = Rect.fromLTWH(
+      rect.left - highlightPadding,
+      rect.top - highlightPadding,
+      rect.width + (highlightPadding * 2),
+      rect.height + (highlightPadding * 2),
+    );
+    
     // Add the shape to the hole path
     if (shape is CircleBorder) {
-      final center = rect.center;
-      final radius = rect.width > rect.height ? rect.width / 2 : rect.height / 2;
+      final center = highlightRect.center;
+      final radius = highlightRect.width > highlightRect.height ? 
+          highlightRect.width / 2 : highlightRect.height / 2;
       holePath.addOval(Rect.fromCircle(center: center, radius: radius));
     } else if (shape is RoundedRectangleBorder) {
       final borderRadius = (shape as RoundedRectangleBorder).borderRadius;
       if (borderRadius is BorderRadius) {
         holePath.addRRect(RRect.fromRectAndCorners(
-          rect,
+          highlightRect,
           topLeft: borderRadius.topLeft,
           topRight: borderRadius.topRight,
           bottomLeft: borderRadius.bottomLeft,
           bottomRight: borderRadius.bottomRight,
         ));
       } else {
-        holePath.addRect(rect);
+        holePath.addRect(highlightRect);
       }
     } else if (shape is OvalBorder) {
-      holePath.addOval(rect);
+      holePath.addOval(highlightRect);
     } else {
-      holePath.addRect(rect);
+      holePath.addRect(highlightRect);
     }
     
     // Subtract the hole from the overlay

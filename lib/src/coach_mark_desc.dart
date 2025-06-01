@@ -67,6 +67,7 @@ class CoachMarkDescWidget extends StatelessWidget {
         titleStyle: description.titleStyle,
         contentStyle: description.contentStyle,
         backgroundColor: description.backgroundColor,
+        arrowRadius: description.arrowRadius,
         onNext: onNext,
         onPrevious: onPrevious,
         onSkip: onSkip,
@@ -115,6 +116,7 @@ class CoachMarkDescWidget extends StatelessWidget {
         ),
         decoration: description.tooltipDecoration ?? defaultDecoration,
         child: Stack(
+          clipBehavior: Clip.none, // Allow arrow to overflow outside the container
           children: [
             // Tooltip arrow
             if (description.showArrow && _shouldShowArrow())
@@ -134,6 +136,8 @@ class CoachMarkDescWidget extends StatelessWidget {
                       child: Text(
                         description.title!,
                         style: description.titleStyle ?? defaultTitleStyle,
+                        softWrap: true,
+                        overflow: TextOverflow.visible,
                       ),
                     ),
                   
@@ -141,6 +145,8 @@ class CoachMarkDescWidget extends StatelessWidget {
                   Text(
                     description.content,
                     style: description.contentStyle ?? defaultContentStyle,
+                    softWrap: true,
+                    overflow: TextOverflow.visible,
                   ),
                   
                   // Navigation buttons
@@ -225,7 +231,13 @@ class CoachMarkDescWidget extends StatelessWidget {
     double left = 0;
     double top = 0;
     double width = 300; // Default width
-    final padding = 20.0; // Padding from the target
+    final padding = 30.0; // Increased padding from the target for better spacing
+    final tooltipHeight = 150.0; // Approximate height of tooltip
+    
+    // Adjust width based on maxWidth if provided
+    if (description.maxWidth != null && description.maxWidth! < width) {
+      width = description.maxWidth!;
+    }
     
     switch (description.alignment) {
       case CoachMarkAlignment.bottom:
@@ -234,23 +246,23 @@ class CoachMarkDescWidget extends StatelessWidget {
         break;
       case CoachMarkAlignment.top:
         left = targetRect.left + (targetRect.width - width) / 2;
-        top = targetRect.top - padding - 150; // Approximate height
+        top = targetRect.top - padding - tooltipHeight;
         break;
       case CoachMarkAlignment.left:
         left = targetRect.left - width - padding;
-        top = targetRect.top + (targetRect.height - 150) / 2;
+        top = targetRect.top + (targetRect.height - tooltipHeight) / 2;
         break;
       case CoachMarkAlignment.right:
         left = targetRect.right + padding;
-        top = targetRect.top + (targetRect.height - 150) / 2;
+        top = targetRect.top + (targetRect.height - tooltipHeight) / 2;
         break;
       case CoachMarkAlignment.topLeft:
         left = targetRect.left;
-        top = targetRect.top - padding - 150;
+        top = targetRect.top - padding - tooltipHeight;
         break;
       case CoachMarkAlignment.topRight:
         left = targetRect.right - width;
-        top = targetRect.top - padding - 150;
+        top = targetRect.top - padding - tooltipHeight;
         break;
       case CoachMarkAlignment.bottomLeft:
         left = targetRect.left;
@@ -262,17 +274,18 @@ class CoachMarkDescWidget extends StatelessWidget {
         break;
     }
     
-    // Ensure the tooltip stays within the screen bounds
-    if (left < 0) {
-      left = 0;
-    } else if (left + width > screenSize.width) {
-      left = screenSize.width - width;
+    // Ensure the tooltip stays within the screen bounds with some margin
+    final screenMargin = 10.0;
+    if (left < screenMargin) {
+      left = screenMargin;
+    } else if (left + width > screenSize.width - screenMargin) {
+      left = screenSize.width - width - screenMargin;
     }
     
-    if (top < 0) {
-      top = 0;
-    } else if (top + 150 > screenSize.height) {
-      top = screenSize.height - 150;
+    if (top < screenMargin) {
+      top = screenMargin;
+    } else if (top + tooltipHeight > screenSize.height - screenMargin) {
+      top = screenSize.height - tooltipHeight - screenMargin;
     }
     
     return _TooltipPosition(left, top, width);
@@ -289,64 +302,69 @@ class CoachMarkDescWidget extends StatelessWidget {
   /// Build the arrow for the tooltip
   Widget _buildArrow() {
     final arrowSize = description.arrowSize;
+    final arrowRadius = description.arrowRadius;
     final arrowColor = description.arrowColor ?? description.backgroundColor ?? Colors.blue;
-    double left = 0;
-    double top = 0;
+    
+    // Calculate tooltip width (same as in _calculatePosition)
+    double tooltipWidth = 300;
+    if (description.maxWidth != null && description.maxWidth! < tooltipWidth) {
+      tooltipWidth = description.maxWidth!;
+    }
     
     switch (description.alignment) {
       case CoachMarkAlignment.bottom:
-        left = (targetRect.width - arrowSize) / 2;
-        top = 0;
+        // Position arrow at the top-center of the tooltip, OUTSIDE the container
         return Positioned(
-          left: left,
-          top: top,
+          left: tooltipWidth / 2 - arrowSize / 2,
+          top: -arrowSize, // Position outside the container
           child: CustomPaint(
             size: Size(arrowSize, arrowSize),
             painter: ArrowPainter(
               direction: ArrowDirection.up,
               color: arrowColor,
+              arrowRadius: arrowRadius,
             ),
           ),
         );
       case CoachMarkAlignment.top:
-        left = (targetRect.width - arrowSize) / 2;
-        top = 150 - arrowSize;
+        // Position arrow at the bottom-center of the tooltip, OUTSIDE the container
         return Positioned(
-          left: left,
-          bottom: 0,
+          left: tooltipWidth / 2 - arrowSize / 2,
+          bottom: -arrowSize, // Position outside the container
           child: CustomPaint(
             size: Size(arrowSize, arrowSize),
             painter: ArrowPainter(
               direction: ArrowDirection.down,
               color: arrowColor,
+              arrowRadius: arrowRadius,
             ),
           ),
         );
       case CoachMarkAlignment.left:
-        left = 300 - arrowSize;
-        top = (targetRect.height - arrowSize) / 2;
+        // Position arrow at the right-center of the tooltip, OUTSIDE the container
         return Positioned(
-          right: 0,
-          top: top,
+          right: -arrowSize, // Position outside the container
+          top: 75 - arrowSize / 2, // Center vertically (150/2 = 75)
           child: CustomPaint(
             size: Size(arrowSize, arrowSize),
             painter: ArrowPainter(
               direction: ArrowDirection.right,
               color: arrowColor,
+              arrowRadius: arrowRadius,
             ),
           ),
         );
       case CoachMarkAlignment.right:
-        left = 0;
-        top = (targetRect.height - arrowSize) / 2;
+        // Position arrow at the left-center of the tooltip, OUTSIDE the container
         return Positioned(
-          left: left,
-          top: top,
+          left: -arrowSize, // Position outside the container
+          top: 75 - arrowSize / 2, // Center vertically
           child: CustomPaint(
             size: Size(arrowSize, arrowSize),
             painter: ArrowPainter(
               direction: ArrowDirection.left,
               color: arrowColor,
+              arrowRadius: arrowRadius,
             ),
           ),
         );
@@ -377,10 +395,12 @@ enum ArrowDirection {
 class ArrowPainter extends CustomPainter {
   final ArrowDirection direction;
   final Color color;
+  final double arrowRadius;
   
   ArrowPainter({
     required this.direction,
     required this.color,
+    this.arrowRadius = 0.0,
   });
   
   @override
@@ -393,27 +413,93 @@ class ArrowPainter extends CustomPainter {
     
     switch (direction) {
       case ArrowDirection.up:
-        path.moveTo(0, size.height);
-        path.lineTo(size.width / 2, 0);
-        path.lineTo(size.width, size.height);
+        if (arrowRadius <= 0) {
+          // Sharp arrow
+          path.moveTo(0, size.height);
+          path.lineTo(size.width / 2, 0);
+          path.lineTo(size.width, size.height);
+        } else {
+          // Rounded arrow
+          final radius = arrowRadius.clamp(0.0, size.width / 4);
+          path.moveTo(radius, size.height);
+          path.lineTo(size.width / 2, radius);
+          path.lineTo(size.width - radius, size.height);
+          path.arcToPoint(
+            Offset(radius, size.height),
+            radius: Radius.circular(radius),
+            clockwise: false,
+          );
+        }
         path.close();
         break;
       case ArrowDirection.down:
-        path.moveTo(0, 0);
-        path.lineTo(size.width / 2, size.height);
-        path.lineTo(size.width, 0);
+        if (arrowRadius <= 0) {
+          // Sharp arrow
+          path.moveTo(0, 0);
+          path.lineTo(size.width / 2, size.height);
+          path.lineTo(size.width, 0);
+        } else {
+          // Rounded arrow
+          final radius = arrowRadius.clamp(0.0, size.width / 4);
+          path.moveTo(radius, 0);
+          path.lineTo(size.width - radius, 0);
+          path.arcToPoint(
+            Offset(size.width / 2 + radius, size.height - radius),
+            radius: Radius.circular(radius),
+            clockwise: true,
+          );
+          path.lineTo(size.width / 2, size.height);
+          path.lineTo(size.width / 2 - radius, size.height - radius);
+          path.arcToPoint(
+            Offset(radius, 0),
+            radius: Radius.circular(radius),
+            clockwise: true,
+          );
+        }
         path.close();
         break;
       case ArrowDirection.left:
-        path.moveTo(size.width, 0);
-        path.lineTo(0, size.height / 2);
-        path.lineTo(size.width, size.height);
+        if (arrowRadius <= 0) {
+          // Sharp arrow
+          path.moveTo(size.width, 0);
+          path.lineTo(0, size.height / 2);
+          path.lineTo(size.width, size.height);
+        } else {
+          // Rounded arrow
+          final radius = arrowRadius.clamp(0.0, size.height / 4);
+          path.moveTo(size.width, radius);
+          path.lineTo(radius, size.height / 2);
+          path.lineTo(size.width, size.height - radius);
+          path.arcToPoint(
+            Offset(size.width, radius),
+            radius: Radius.circular(radius),
+            clockwise: false,
+          );
+        }
         path.close();
         break;
       case ArrowDirection.right:
-        path.moveTo(0, 0);
-        path.lineTo(size.width, size.height / 2);
-        path.lineTo(0, size.height);
+        if (arrowRadius <= 0) {
+          // Sharp arrow
+          path.moveTo(0, 0);
+          path.lineTo(size.width, size.height / 2);
+          path.lineTo(0, size.height);
+        } else {
+          // Rounded arrow
+          final radius = arrowRadius.clamp(0.0, size.height / 4);
+          path.moveTo(0, radius);
+          path.lineTo(0, size.height - radius);
+          path.arcToPoint(
+            Offset(size.width - radius, size.height / 2),
+            radius: Radius.circular(radius),
+            clockwise: true,
+          );
+          path.arcToPoint(
+            Offset(0, radius),
+            radius: Radius.circular(radius),
+            clockwise: true,
+          );
+        }
         path.close();
         break;
     }
